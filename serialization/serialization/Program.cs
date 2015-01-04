@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using ProtoBuf;
 
 namespace serialization
 {
@@ -42,6 +43,10 @@ namespace serialization
                 case "json":
                     SerializeToJson();
                     break;
+
+                case "proto":
+                    SerializeToProtobuf();
+                    break;
             }
         }
 
@@ -56,6 +61,10 @@ namespace serialization
 
                 case "json":
                     users = DeserializeFromJson();
+                    break;
+
+                case "proto":
+                    users = DeserializeFromProtobuf();
                     break;
             }
 
@@ -104,6 +113,23 @@ namespace serialization
         {
             var json = File.ReadAllText("users.json");
             return JsonConvert.DeserializeObject<User[]>(json);
+        }
+
+        private static void SerializeToProtobuf()
+        {
+            var users = GetUsers();
+            using (var file = File.Create("users.bin"))
+            {
+                Serializer.Serialize(file, users);
+            }
+        }
+
+        private static IEnumerable<User> DeserializeFromProtobuf()
+        {
+            using (var file = File.OpenRead("users.bin"))
+            {
+                return Serializer.Deserialize<User[]>(file);
+            }
         }
 
         private static IEnumerable<User> GetUsers()
